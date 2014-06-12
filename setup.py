@@ -10,8 +10,9 @@ setup(name='scalegrease',
       packages=['scalegrease'],
       data_files=[('/etc', ['conf/scalegrease.json'])],
       scripts=[
+          'bin/greaselaunch',
           'bin/greaserun',
-          'bin/greaseworker'
+          'bin/greasework'
       ]
 )
 
