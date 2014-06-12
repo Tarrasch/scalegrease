@@ -41,8 +41,8 @@ Scopes
 ======
 
 Running a batch computation involves multiple steps and considerations.  For the first iteration,
-we will address the deployment, run, and debug scopes, described below.  For the other scopes, we
-will use existing (Spotify) infrastructure, e.g. crontabs and Luigi, for the near future.
+we will address the deployment, execution, and debug scopes, described below.  For the other 
+scopes, we will use existing (Spotify) infrastructure, e.g. crontabs and Luigi, for the near future.
 Regarding Luigi, it has a rich set of functionality, and parts of it will likely be used, at least
 for the foreseeable future.
 
@@ -116,22 +116,25 @@ Roadmap
 Iteration 1
 -----------
 
-Manual and scheduled dispatch are supported, via a simple sgdispatch
-script.  Scheduled dispatch is supported in a primitive manner, with
-crontab lines on redundant scheduling machines.
+Manual and scheduled dispatch are supported.  For manual dispatch, use greaserun, which dynamically 
+downloads a specified fat jar and executes a 
+compute job contained therein.  It also supports running a job contained in a jar stored on the 
+local file system.
 
-Arbitration through simple ZooKeeper-based queue, aka funnel, which
-discards duplicate jobs.  Finished and failed jobs are retained in the
-queue for a limited time, in order to avoid duplicated job runs within a
-time window (< 1h).
+Scheduled dispatch is supported in a primitive manner, with
+crontab lines on redundant scheduling machines.  In order to distribute crontabs to a farm, 
+use greaselaunch, which distributes all crontabs found in the project to a central location.  
+Farm worker machines periodically call the script greasework, which copies crontab files to 
+/etc/cron.d.   
 
-Workers pull jobs from the funnel, and locally deploy a job jar, specified
-in job description, from a central artifactory.  They determine the type of
-jar, and invoke the appropriate runner, ShellRunner, HadoopRunner, or
-LuigiRunner.  For non-trivial cases, use the LuigiRunner for specifying
-inputs/outputs, parameter resolution, cascading backfill jobs, etc.  Luigi
-essentially provides our job specification embedded DSL, but does not use
-the central Luigi scheduler.
+The crontabs typically contain greaserun commands, which ensures that the fat job jars are 
+dynamically deployed.  Job jars should contain Luigi job DSL files, 
+and be executed with the greaserun Luigi runner.  The Luigi central scheduler ensures 
+that no duplicate jobs are executed.
+
+As a poor man's arbitration, greaserun will be complemented with a simple overload guard.  It 
+runs jobs only if the machine load complies with constraints, expressed e.g. in terms of loadavg,
+number of greaserun processes, etc.
 
 Logs are generated/copied to a common log directory, which should live on
 shared storage, e.g. an NFS mount.
@@ -140,14 +143,13 @@ shared storage, e.g. an NFS mount.
 Iteration 2
 -----------
 
-Scheduled dispatch is specified in a schedule definition file in the job
-source tree, with cron-like syntax.  A Jenkins job DSL file specifies that
-the file should be pushed to a scheduling service as part of the CD chain.
-A scheduling system dispatches it to the arbitration stage.  Possible
+A Jenkins job DSL specification ensures that greaselaunch is called, automatically scheduling 
+jobs after new code is pushed to the source code repository. 
+
+A scheduling system dispatches jobs it to the arbitration stage.  Possible
 technologies:  Chronos, Azkaban, Aurora.
 
 Depending on scheduling technology, it may also provide induced dispatch,
 and sophisticated arbitration, e.g. with strong resource allocation and
 isolation.  Possible technologies: Mesos, simpler ZK job queue without
 deduplication.
-
