@@ -30,7 +30,8 @@ class ShellRunner(RunnerBase):
 def find_runner(runner_name, config):
     names = config['runners']
     for rn in names:
-        if rn.split('.')[-1].lower() in (runner_name.lower(), runner_name.lower() + "runner"):
+        class_name = rn.split('.')[-1]
+        if class_name.lower() == (runner_name.lower() + "runner"):
             clazz = system.load_class(rn)
             class_config = config.get(clazz.__name__)
             return clazz(class_config)
