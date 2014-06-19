@@ -1,7 +1,7 @@
 {
     "_note": "Avoid environment variables in production. They are useful for testing, however.",
     "runners": [
-        "scalegrease.luigi_runner.LuigiRunner",
+        "scalegrease.luigi.LuigiRunner",
         "scalegrease.hadoop.HadoopRunner",
         "scalegrease.runner.ShellRunner"
     ],
