@@ -1,8 +1,8 @@
 import os
 import shutil
-import subprocess
 import tempfile
 import zipfile
+import system
 
 from scalegrease.runner import RunnerBase
 
@@ -38,4 +38,4 @@ class LuigiRunner(RunnerBase):
 
         cmd_line = [runner_cmd] + list(cmd_args)
 
-        subprocess.check_call(cmd_line, env=sub_env)
+        system.run_with_logging(cmd_line, env=sub_env)
