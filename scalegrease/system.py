@@ -26,6 +26,29 @@ def check_output(cmd, env=None):
     return output
 
 
+def run_with_logging(cmd, env=None):
+    """
+    Run cmd and wait for it to finish. While cmd is running, we read it's
+    output and print it to a logger.
+    """
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT, env=env)
+    logger = logging.getLogger('subprocess.{0}'.format(cmd[0]))
+    output_lines = []
+    while True:
+        line = process.stdout.readline().rstrip('\n')
+        if not line:
+            break
+        output_lines += [line]
+        logger.info(line)
+
+    exit_code = process.poll()
+    if exit_code:
+        output = '\n'.join(output_lines)
+        raise CalledProcessError(exit_code, cmd, output=output)
+    return None
+
+
 def write_file(path, content):
     f = open(path, "w")
     with f:
