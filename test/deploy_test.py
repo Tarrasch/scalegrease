@@ -11,11 +11,11 @@ class StorageResolutionTest(TestCase):
     @patch("scalegrease.deploy.os.path.exists", new=lambda (x): x in ["/path/to/local.jar"])
     def test_local_storage_resolve(self):
         storage = ArtifactStorage.resolve("/path/to/local.jar")
-        self.assertIsInstance(storage, LocalStorage)
+        self.assertTrue(isinstance(storage, LocalStorage))
 
     def test_maven_storage_resolve(self):
         storage = ArtifactStorage.resolve("group:artifact:version")
-        self.assertIsInstance(storage, MavenStorage)
+        self.assertTrue(isinstance(storage, MavenStorage))
 
 
 class LocalStorageTest(TestCase):
