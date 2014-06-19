@@ -102,6 +102,13 @@ Collect the relevant execution tracing information, aka logs, to enable
 debugging job failures.
 
 
+Running it
+==========
+
+```bash
+export PYTHONPATH="$PWD:$PYTHONPATH"
+./bin/greaserun --help
+```
 
 Roadmap
 =======
