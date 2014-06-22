@@ -14,6 +14,7 @@
     "ShellRunner": {},
 
     "launch": {
+        "launcher_class": "scalegrease.launch.SshNfsLauncher",
         "crontab_repository_host": "$SCALEGREASE_REPO_HOST",
         "crontab_repository_dir": "$SCALEGREASE_REPO_DIR",
         "crontab_etc_crond": "$SCALEGREASE_ETC_CROND",
