@@ -3,6 +3,12 @@ import re
 import os
 import glob
 import abc
+import json
+import shutil
+import socket
+
+import kazoo.client
+import samsa.cluster
 
 from scalegrease import error
 from scalegrease import system
@@ -50,6 +56,86 @@ class Launcher(object):
     def launch(self, group_id, artifact_id, crontabs):
         raise NotImplementedError()
 
+    @abc.abstractmethod
+    def work(self):
+        raise NotImplementedError()
+
+
+class KafkaLauncher(Launcher):
+    VERSION = 1
+
+    def _obtain_topic(self):
+        topic_name = str(self._config['kafka_launcher_topic'])
+        zk_hosts = self._config['zookeeper_hosts']
+        zk = kazoo.client.KazooClient(hosts=zk_hosts)
+        zk.start()
+        cluster = samsa.cluster.Cluster(zk)
+        topic = cluster.topics[topic_name]
+        return topic, zk
+
+    def launch(self, group_id, artifact_id, crontabs):
+        crontab_contents = [{'name': os.path.basename(cr), 'content': system.read_file(cr)}
+                            for cr in crontabs]
+        msg = {'version': self.VERSION, 'group_id': group_id, 'artifact_id': artifact_id,
+               'crontabs': crontab_contents}
+        json_msg = json.dumps(msg)
+        topic, zk = self._obtain_topic()
+        topic.publish(json_msg)
+        # TODO: Use context manager, aka with statement
+        zk.stop()
+
+    def work(self):
+        topic, zk = self._obtain_topic()
+        group_name = b"scalegrease-work-consumer-{0}".format(socket.gethostname())
+        consumer = topic.subscribe(group_name)
+        while True:
+            msg = consumer.next_message(block=True, timeout=1)
+            if not msg:
+                break
+            self._handle_cron_msg(msg)
+
+        # TODO: Use context manager, aka with statement
+        zk.stop()
+
+    def _handle_cron_msg(self, msg):
+        logging.info('Processing launch message: "%s"', msg)
+        json_msg = json.loads(msg)
+        if json_msg['version'] != self.VERSION:
+            logging.info("Retrieved wrong message version, expected %d, discarding: %s",
+                         self.VERSION, msg)
+            return
+        group_id = json_msg['group_id']
+        artifact_id = json_msg['artifact_id']
+        crontabs = json_msg['crontabs']
+        crontab_name_contents = dict([(ct['name'], ct['content']) for ct in crontabs])
+        self._update_crontabs(group_id, artifact_id, crontab_name_contents)
+
+    def _package_prefix(self, group_id, artifact_id):
+        return "{0}__{1}__{2}__".format(self._config["crontab_unique_prefix"], group_id,
+                                        artifact_id)
+
+    def _update_crontabs(self, group_id, artifact_id, crontab_name_contents):
+        cron_dst_dir = self._config["crontab_etc_crond"]
+        package_prefix = self._package_prefix(group_id, artifact_id)
+        existing_crontabs = filter(lambda ct: ct.startswith(package_prefix),
+                                   os.listdir(cron_dst_dir))
+        for existing in existing_crontabs:
+            if existing[len(package_prefix):] not in crontab_name_contents:
+                stale_path = "{0}/{1}".format(cron_dst_dir, existing)
+                logging.info("rm %s", stale_path)
+                try:
+                    os.remove(stale_path)
+                except IOError as e:
+                    logging.error("Failed to remove %s", stale_path, e)
+        for tab_name, tab_contents in crontab_name_contents.items():
+            dst_path = "{0}/{1}{2}".format(cron_dst_dir, package_prefix, tab_name)
+            if not os.path.isfile(dst_path) or tab_contents != system.read_file(dst_path):
+                logging.info("Writing crontab %s, contents:\n  %s", dst_path, tab_contents)
+                try:
+                    system.write_file(dst_path, tab_contents)
+                except IOError as e:
+                    logging.exception("Failed to install crontab %s", dst_path)
+
 
 class SshNfsLauncher(Launcher):
     def launch(self, group_id, artifact_id, crontabs):
@@ -68,6 +154,56 @@ class SshNfsLauncher(Launcher):
             logging.info(' '.join(scp_cmd))
             scp_output = system.check_output(scp_cmd)
             logging.info("Scp output: %s" % scp_output)
+
+    def work(self):
+        cron_dst_dir = self._config["crontab_etc_crond"]
+        cron_src_dir = self._config["crontab_repository_dir"]
+        prefix = self._config["crontab_unique_prefix"]
+        new_crontabs = os.listdir(cron_src_dir)
+        existing_crontabs = filter(lambda ct: ct.startswith(prefix), os.listdir(cron_dst_dir))
+        for existing in existing_crontabs:
+            if existing[len(prefix):] not in new_crontabs:
+                stale_path = "{0}/{1}".format(cron_dst_dir, existing)
+                logging.info("rm %s", stale_path)
+                try:
+                    os.remove(stale_path)
+                except IOError as e:
+                    logging.error("Failed to remove %s", stale_path, e)
+        for new_tab in new_crontabs:
+            src_path = "{0}/{1}".format(cron_src_dir, new_tab)
+            dst_path = "{0}/{1}{2}".format(cron_dst_dir, prefix, new_tab)
+            if not os.path.isfile(dst_path) or system.read_file(src_path) != system.read_file(dst_path):
+                logging.info("cp %s %s", src_path, dst_path)
+                try:
+                    shutil.copy2(src_path, dst_path)
+                except IOError as e:
+                    logging.error("Failed to install %s as %s", src_path, dst_path, e)
+
+    def _update_crontabs(self, group_id, artifact_id, crontab_name_contents):
+        cron_dst_dir = self._config["crontab_etc_crond"]
+        package_prefix = self._package_prefix(group_id, artifact_id)
+        existing_crontabs = filter(lambda ct: ct.startswith(package_prefix),
+                                   os.listdir(cron_dst_dir))
+        for existing in existing_crontabs:
+            if existing[len(package_prefix):] not in crontab_name_contents:
+                stale_path = "{0}/{1}".format(cron_dst_dir, existing)
+                logging.info("rm %s", stale_path)
+                try:
+                    os.remove(stale_path)
+                except IOError as e:
+                    logging.error("Failed to remove %s", stale_path, e)
+        for tab_name, tab_contents in crontab_name_contents.items():
+            dst_path = "{0}/{1}{2}".format(cron_dst_dir, package_prefix, tab_name)
+            if not os.path.isfile(dst_path) or tab_contents != system.read_file(dst_path):
+                logging.info("Writing crontab %s, contents:\n  %s", dst_path, tab_contents)
+                try:
+                    system.write_file(dst_path, tab_contents)
+                except IOError as e:
+                    logging.exception("Failed to install crontab %s", dst_path)
+
+    def _package_prefix(self, group_id, artifact_id):
+        return "{0}__{1}__{2}__".format(self._config["crontab_unique_prefix"], group_id,
+                                        artifact_id)
 
 
 def add_arguments(parser):

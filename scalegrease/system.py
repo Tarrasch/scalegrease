@@ -82,8 +82,8 @@ def initialise(argv, extra_arguments_adder):
         rest_argv = rest_argv[1:]
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
     logging.info("Reading configuration from %s", args.config_file)
-    conf_contents = read_file(args.config_file)
-    expanded_conf = os.path.expandvars(conf_contents)
-    conf = json.loads(expanded_conf)
-    logging.debug("Configuration read:\n%s", conf)
-    return args, conf, rest_argv
+    config_file_contents = read_file(args.config_file)
+    config_expanded = os.path.expandvars(config_file_contents)
+    config = json.loads(config_expanded)
+    logging.debug("Configuration read:\n%s", config)
+    return args, config, rest_argv

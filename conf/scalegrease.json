@@ -14,10 +14,15 @@
     "ShellRunner": {},
 
     "launch": {
-        "launcher_class": "scalegrease.launch.SshNfsLauncher",
+        "launcher_class": "scalegrease.launch.KafkaLauncher",
+        "_launcher_class_unused": "scalegrease.launch.SshNfsLauncher",
+
         "crontab_repository_host": "$SCALEGREASE_REPO_HOST",
         "crontab_repository_dir": "$SCALEGREASE_REPO_DIR",
         "crontab_etc_crond": "$SCALEGREASE_ETC_CROND",
-        "crontab_unique_prefix": "scalegrease__"
+        "crontab_unique_prefix": "scalegrease",
+
+        "zookeeper_hosts": "localhost:2181",
+        "kafka_launcher_topic": "scalegrease-launcher"
     }
 }
