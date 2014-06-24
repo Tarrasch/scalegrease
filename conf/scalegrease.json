@@ -22,7 +22,13 @@
         "crontab_etc_crond": "$SCALEGREASE_ETC_CROND",
         "crontab_unique_prefix": "scalegrease",
 
-        "zookeeper_hosts": "localhost:2181",
+        "zookeeper": {
+            "hosts": "localhost:2181"
+        },
+        "_zookeeper_unused": {
+            "srv": "_acme-zookeeper._tcp.services.nyc.acme.net"
+        },
+
         "kafka_launcher_topic": "scalegrease-launcher"
     }
 }

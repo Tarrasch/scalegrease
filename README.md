@@ -102,11 +102,24 @@ Collect the relevant execution tracing information, aka logs, to enable
 debugging job failures.
 
 
-Running it
-==========
+Development
+===========
+
+Requirements for development
+----------------------------
+
+```bash
+sudo pip install -r requirements.txt
+```
+
+Test running locally
+--------------------
 
 ```bash
 export PYTHONPATH="$PWD:$PYTHONPATH"
+# Look in conf/scalegrease.json, and set the desired variables for local interactive testing
+export SCALEGREASE_ETC_CROND=/tmp/cron.d
+mkdir -p /tmp/cron.d
 ./bin/greaserun --help
 ```
 

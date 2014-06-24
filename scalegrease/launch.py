@@ -1,3 +1,4 @@
+import dns.resolver
 import logging
 import re
 import os
@@ -64,18 +65,38 @@ class Launcher(object):
 class KafkaLauncher(Launcher):
     VERSION = 1
 
+    def _find_zk_hosts(self):
+        zk_conf = self._config['zookeeper']
+        hosts_conf = zk_conf.get('hosts')
+        srv_conf = zk_conf.get('srv')
+        if hosts_conf:
+            if srv_conf:
+                logging.warn("Found both hosts and srv zookeeper configuration, using hosts")
+            return hosts_conf
+        answers = dns.resolver.query(srv_conf, 'SRV')
+        return ','.join(["{0}:{1}".format(a.target.to_text(), a.port) for a in answers])
+
     def _obtain_topic(self):
         topic_name = str(self._config['kafka_launcher_topic'])
-        zk_hosts = self._config['zookeeper_hosts']
+        zk_hosts = self._find_zk_hosts()
         zk = kazoo.client.KazooClient(hosts=zk_hosts)
         zk.start()
         cluster = samsa.cluster.Cluster(zk)
         topic = cluster.topics[topic_name]
         return topic, zk
 
+    def _validate_name(self, name):
+        if not re.match(r"[a-zA-Z0-9\._,:@-]{1,100}", name):
+            raise ValueError(
+                'Invalid component name, please use letters and digits: "{0}"'.format(name))
+
     def launch(self, group_id, artifact_id, crontabs):
-        crontab_contents = [{'name': os.path.basename(cr), 'content': system.read_file(cr)}
-                            for cr in crontabs]
+        self._validate_name(group_id)
+        self._validate_name(artifact_id)
+        crontab_contents = []
+        for cr in crontabs:
+            self._validate_name(cr)
+            crontab_contents.append({'name': os.path.basename(cr), 'content': system.read_file(cr)})
         msg = {'version': self.VERSION, 'group_id': group_id, 'artifact_id': artifact_id,
                'crontabs': crontab_contents}
         json_msg = json.dumps(msg)
@@ -92,7 +113,10 @@ class KafkaLauncher(Launcher):
             msg = consumer.next_message(block=True, timeout=1)
             if not msg:
                 break
-            self._handle_cron_msg(msg)
+            try:
+                self._handle_cron_msg(msg)
+            except:
+                logging.exception('Failed to handle message, proceeding to next:\n  "%s"', msg)
 
         # TODO: Use context manager, aka with statement
         zk.stop()
@@ -107,7 +131,11 @@ class KafkaLauncher(Launcher):
         group_id = json_msg['group_id']
         artifact_id = json_msg['artifact_id']
         crontabs = json_msg['crontabs']
+        self._validate_name(group_id)
+        self._validate_name(artifact_id)
         crontab_name_contents = dict([(ct['name'], ct['content']) for ct in crontabs])
+        for crontab_name in crontab_name_contents:
+            self._validate_name(crontab_name)
         self._update_crontabs(group_id, artifact_id, crontab_name_contents)
 
     def _package_prefix(self, group_id, artifact_id):
@@ -125,15 +153,15 @@ class KafkaLauncher(Launcher):
                 logging.info("rm %s", stale_path)
                 try:
                     os.remove(stale_path)
-                except IOError as e:
-                    logging.error("Failed to remove %s", stale_path, e)
+                except IOError:
+                    logging.exception("Failed to remove %s", stale_path)
         for tab_name, tab_contents in crontab_name_contents.items():
             dst_path = "{0}/{1}{2}".format(cron_dst_dir, package_prefix, tab_name)
             if not os.path.isfile(dst_path) or tab_contents != system.read_file(dst_path):
                 logging.info("Writing crontab %s, contents:\n  %s", dst_path, tab_contents)
                 try:
                     system.write_file(dst_path, tab_contents)
-                except IOError as e:
+                except IOError:
                     logging.exception("Failed to install crontab %s", dst_path)
 
 
