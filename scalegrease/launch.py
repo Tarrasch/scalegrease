@@ -7,19 +7,22 @@ import abc
 import json
 import shutil
 import socket
+import xml.etree.ElementTree
 
 import kazoo.client
 import samsa.cluster
+import time
+import xml.etree
 
 from scalegrease import error
 from scalegrease import system
 
 
 def maven_output(mvn_cmd):
-    lines = system.check_output(mvn_cmd).splitlines()
-    # Filter out log output and dowload output.
-    return '\n'.join(
-        filter(lambda li: not re.match(r"^(\[(INFO|DEBUG)\]|Downloading: |[0-9]+ )", li), lines))
+    logging.info(" ".join(mvn_cmd))
+    output = system.check_output(mvn_cmd)
+    logging.debug(output)
+    return output
 
 
 def launch(crontab_glob, pom_file, offline, conf):
@@ -29,17 +32,17 @@ def launch(crontab_glob, pom_file, offline, conf):
         logging.warn("No crontab files found matching '%s', pwd=%s.  Existing production crontabs "
                      "will be deleted", crontab_glob, os.getcwd())
     # Now, it would be great if maven could spit out structured output.  This is fragile.
-    group_output = maven_output(["mvn"] + offline_flag + ["--file", pom_file, "help:evaluate",
-                                                          "-Dexpression=project.groupId"])
-    group_match = re.search(r"^[^\.]+(\.[^\.]+)*$", group_output, re.MULTILINE)
-    group_id = group_match.group()
-    logging.info("Determined groupId: %s", group_id)
-    artifact_output = maven_output(
-        ["mvn"] + offline_flag + ["--file", pom_file, "help:evaluate",
-                                  "-Dexpression=project.artifactId"])
-    artifact_match = re.search(r"^[^\.]+(\.[^\.]+)*$", artifact_output, re.MULTILINE)
-    artifact_id = artifact_match.group()
-    logging.info("Determined artifactId: %s", artifact_id)
+    effective_pom_output = maven_output(["mvn"] + offline_flag + ["--file", pom_file,
+                                                                  "help:effective-pom"])
+    def tag_value(elem, tag):
+        return filter(lambda e: re.match(r"\{.*\}" + tag, e.tag), list(elem))[0].text
+
+    pom_text = re.search(r"<project .*</project>", effective_pom_output, re.DOTALL).group(0)
+    pom = xml.etree.ElementTree.XML(pom_text)
+    group_id = tag_value(pom, "groupId")
+    artifact_id = tag_value(pom, "artifactId")
+
+    logging.info("Determined groupId and artifactId: %s:%s", group_id, artifact_id)
 
     launch_conf = conf['launch']
     launcher_class = system.load_class(launch_conf["launcher_class"])
@@ -107,7 +110,8 @@ class KafkaLauncher(Launcher):
 
     def work(self):
         topic, zk = self._obtain_topic()
-        group_name = b"scalegrease-work-consumer-{0}".format(socket.gethostname())
+        group_name = b"scalegrease-work-consumer-{0}-{1}".format(
+            socket.gethostname(),  int(time.time()))
         consumer = topic.subscribe(group_name)
         while True:
             msg = consumer.next_message(block=True, timeout=1)
@@ -147,8 +151,11 @@ class KafkaLauncher(Launcher):
         package_prefix = self._package_prefix(group_id, artifact_id)
         existing_crontabs = filter(lambda ct: ct.startswith(package_prefix),
                                    os.listdir(cron_dst_dir))
+        # Crontab files must not contain a dot, or they will not be run.
+        def name_transform(ct):
+            return "{0}/{1}".format(os.path.dirname(ct), os.path.basename(ct).replace(".", "_"))
         for existing in existing_crontabs:
-            if existing[len(package_prefix):] not in crontab_name_contents:
+            if existing[len(package_prefix):] not in map(name_transform, crontab_name_contents):
                 stale_path = "{0}/{1}".format(cron_dst_dir, existing)
                 logging.info("rm %s", stale_path)
                 try:
@@ -156,7 +163,7 @@ class KafkaLauncher(Launcher):
                 except IOError:
                     logging.exception("Failed to remove %s", stale_path)
         for tab_name, tab_contents in crontab_name_contents.items():
-            dst_path = "{0}/{1}{2}".format(cron_dst_dir, package_prefix, tab_name)
+            dst_path = name_transform("{0}/{1}{2}".format(cron_dst_dir, package_prefix, tab_name))
             if not os.path.isfile(dst_path) or tab_contents != system.read_file(dst_path):
                 logging.info("Writing crontab %s, contents:\n  %s", dst_path, tab_contents)
                 try:
