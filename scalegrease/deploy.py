@@ -20,8 +20,11 @@ class ArtifactStorage(object):
     def resolve(cls, artifact_spec):
         if os.path.exists(artifact_spec):
             return LocalStorage(artifact_spec)
-        else:
+        elif ":" in artifact_spec:
             return MavenStorage(artifact_spec)
+        else:
+            raise ValueError("artifact_spec '{0}' is not a file nor could "
+                             "it specify an artifact".format(artifact_spec))
 
     @abc.abstractmethod
     def fetch(self, argv):
