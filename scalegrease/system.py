@@ -36,15 +36,15 @@ def run_with_logging(cmd, env=None):
     logger = logging.getLogger('subprocess.{0}'.format(cmd[0]))
     output_lines = []
     while True:
-        line = process.stdout.readline().rstrip('\n')
+        line = process.stdout.readline()
         if not line:
             break
         output_lines += [line]
-        logger.info(line)
+        logger.info(line.rstrip('\n'))
 
     exit_code = process.poll()
     if exit_code:
-        output = '\n'.join(output_lines)
+        output = ''.join(output_lines)
         raise CalledProcessError(exit_code, cmd, output=output)
     return None
 
