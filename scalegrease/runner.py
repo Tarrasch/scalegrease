@@ -54,7 +54,7 @@ def extra_arguments(parser):
     parser.add_argument("--runner", "-r", required=True,
                         help="Specify runner to use, e.g. hadoop, luigi.  "
                              "It should match one of the runner names in the config, "
-                             "optionally with 'runner' removed.")
+                             "with 'runner' removed.")
     parser.add_argument(
         "artifact",
         help="Specify Maven artifact to download and run, either on format "
