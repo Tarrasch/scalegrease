@@ -13,7 +13,7 @@ def extra_arguments(_):
 def cron_install(conf):
     launcher_class = system.load_class(conf["launcher_class"])
     launcher = launcher_class(conf)
-    launcher.work()
+    launcher.snatch()
 
 
 def main(argv):

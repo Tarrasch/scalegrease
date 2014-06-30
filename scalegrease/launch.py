@@ -61,7 +61,7 @@ class Launcher(object):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def work(self):
+    def snatch(self):
         raise NotImplementedError()
 
 
@@ -108,9 +108,9 @@ class KafkaLauncher(Launcher):
         # TODO: Use context manager, aka with statement
         zk.stop()
 
-    def work(self):
+    def snatch(self):
         topic, zk = self._obtain_topic()
-        group_name = b"scalegrease-work-consumer-{0}-{1}".format(
+        group_name = b"scalegrease-snatch-consumer-{0}-{1}".format(
             socket.gethostname(),  int(time.time()))
         consumer = topic.subscribe(group_name)
         while True:
@@ -190,7 +190,7 @@ class SshNfsLauncher(Launcher):
             scp_output = system.check_output(scp_cmd)
             logging.info("Scp output: %s" % scp_output)
 
-    def work(self):
+    def snatch(self):
         cron_dst_dir = self._config["crontab_etc_crond"]
         cron_src_dir = self._config["crontab_repository_dir"]
         prefix = self._config["crontab_unique_prefix"]

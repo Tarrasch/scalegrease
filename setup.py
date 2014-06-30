@@ -12,7 +12,7 @@ setup(name='scalegrease',
       scripts=[
           'bin/greaselaunch',
           'bin/greaserun',
-          'bin/greasework'
+          'bin/greasesnatch'
       ]
 )
 

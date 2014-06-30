@@ -137,7 +137,7 @@ local file system.
 Scheduled dispatch is supported in a primitive manner, with
 crontab lines on redundant scheduling machines.  In order to distribute crontabs to a farm, 
 use greaselaunch, which distributes all crontabs found in the project to a central location.  
-Farm worker machines periodically call the script greasework, which copies crontab files to 
+Farm worker machines periodically call the script greasesnatch, which copies crontab files to 
 /etc/cron.d.   
 
 The crontabs typically contain greaserun commands, which ensures that the fat job jars are 
