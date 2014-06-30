@@ -7,7 +7,7 @@ from scalegrease import system
 from scalegrease import common
 
 
-def extra_arguments(_):
+def extra_arguments_adder(_):
     pass
 
 
@@ -18,7 +18,7 @@ def cron_install(conf):
 
 
 def main(argv):
-    args, conf, rest_argv = common.initialise(argv, extra_arguments)
+    args, conf, rest_argv = common.initialise(argv, extra_arguments_adder)
 
     try:
         cron_install(conf['launch'])

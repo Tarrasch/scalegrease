@@ -50,7 +50,7 @@ def run(runner_name, artifact_spec, runner_argv, config):
         raise
 
 
-def extra_arguments(parser):
+def extra_arguments_adder(parser):
     parser.add_argument("--runner", "-r", required=True,
                         help="Specify runner to use, e.g. hadoop, luigi.  "
                              "It should match one of the runner names in the config, "
@@ -62,7 +62,7 @@ def extra_arguments(parser):
 
 
 def main(argv):
-    args, conf, rest_argv = common.initialise(argv, extra_arguments)
+    args, conf, rest_argv = common.initialise(argv, extra_arguments_adder)
     try:
         run(args.runner, args.artifact, rest_argv, conf)
     except error.Error:
