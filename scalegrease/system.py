@@ -11,11 +11,13 @@ class CalledProcessError(subprocess.CalledProcessError):
         self.output = output
 
     def __str__(self):
-        return super(CalledProcessError, self).__str__() + ('\nOutput:\n"""\n%s"""' % self.output)
+        return (super(CalledProcessError, self).__str__() +
+                ('\nOutput:\n"""\n%s"""' % self.output))
 
 
 def check_output(cmd, env=None):
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT, env=env)
     output, _ = process.communicate()
     exit_code = process.poll()
     if exit_code:
