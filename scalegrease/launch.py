@@ -242,7 +242,7 @@ class SshNfsLauncher(Launcher):
                                         artifact_id)
 
 
-def add_arguments(parser):
+def extra_arguments_adder(parser):
     parser.add_argument("--cron-glob", "-g", default="src/main/cron/*.cron",
                         help="Glob pattern for enumerating cron files")
     parser.add_argument("--mvn-offline", "-o", action="store_true",
@@ -252,7 +252,7 @@ def add_arguments(parser):
 
 
 def main(argv):
-    args, conf, _rest_argv = common.initialise(argv, add_arguments)
+    args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder)
 
     try:
         launch(args.cron_glob, args.pom_file, args.mvn_offline, conf)
