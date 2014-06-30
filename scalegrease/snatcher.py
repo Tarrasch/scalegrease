@@ -1,7 +1,5 @@
 import logging
-import shutil
 import sys
-import os
 from scalegrease import error
 from scalegrease import system
 from scalegrease import common
