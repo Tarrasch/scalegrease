@@ -252,7 +252,7 @@ def add_arguments(parser):
 
 
 def main(argv):
-    args, conf, _ = common.initialise(argv, add_arguments)
+    args, conf, _rest_argv = common.initialise(argv, add_arguments)
 
     try:
         launch(args.cron_glob, args.pom_file, args.mvn_offline, conf)
