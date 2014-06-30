@@ -4,6 +4,7 @@ import sys
 import os
 from scalegrease import error
 from scalegrease import system
+from scalegrease import common
 
 
 def extra_arguments(_):
@@ -17,7 +18,7 @@ def cron_install(conf):
 
 
 def main(argv):
-    args, conf, rest_argv = system.initialise(argv, extra_arguments)
+    args, conf, rest_argv = common.initialise(argv, extra_arguments)
 
     try:
         cron_install(conf['launch'])

@@ -16,6 +16,7 @@ import xml.etree
 
 from scalegrease import error
 from scalegrease import system
+from scalegrease import common
 
 
 def maven_output(mvn_cmd):
@@ -251,7 +252,7 @@ def add_arguments(parser):
 
 
 def main(argv):
-    args, conf, _ = system.initialise(argv, add_arguments)
+    args, conf, _ = common.initialise(argv, add_arguments)
 
     try:
         launch(args.cron_glob, args.pom_file, args.mvn_offline, conf)

@@ -5,6 +5,7 @@ import sys
 from scalegrease import deploy
 from scalegrease import error
 from scalegrease import system
+from scalegrease import common
 
 
 class RunnerBase(object):
@@ -61,7 +62,7 @@ def extra_arguments(parser):
 
 
 def main(argv):
-    args, conf, rest_argv = system.initialise(argv, extra_arguments)
+    args, conf, rest_argv = common.initialise(argv, extra_arguments)
     try:
         run(args.runner, args.artifact, rest_argv, conf)
     except error.Error:
