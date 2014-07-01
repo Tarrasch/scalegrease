@@ -1,8 +1,8 @@
 import argparse
 import json
 import logging
+import logging.handlers
 import os
-import datetime
 import socket
 import getpass
 from scalegrease import system
@@ -42,7 +42,6 @@ def parse_config_common(config, instantiated_log_path_infix):
     if config is None:
         logging.info('No "common" value is configured, skipping ...')
     else:
-        pass
         parse_config_common_file_logger(config.get("file_logger"),
                                         instantiated_log_path_infix)
 
@@ -57,8 +56,6 @@ def parse_config_common_file_logger(config, instantiated_log_path_infix):
             username=getpass.getuser(),
             short_hostname=get_short_hostname(),
         )
-        now = datetime.datetime.now()
-        path_suffix = '{0:%Y-%m-%d_%H:%M:%S}.log'.format(now)
         logging_directory = path_prefix + instantiated_log_path_infix
         try:
             system.mkdir_p(logging_directory)
@@ -67,10 +64,18 @@ def parse_config_common_file_logger(config, instantiated_log_path_infix):
                               "files. Skipping", logging_directory)
             return
 
-        total_path = logging_directory + path_suffix
-        file_handler = logging.FileHandler(total_path)
+        # We include the process id since we can imagine multiple instances
+        # writing to the same file
+        FORMAT = '[%(process)d] %(asctime)-15s %(levelname)-6s %(message)s'
+        total_path = logging_directory + "scalegrease.log"
+        trfh_handler = (
+            logging.handlers.TimedRotatingFileHandler(total_path,
+                                                      when="midnight",
+                                                      backupCount=100,
+                                                      utc=True))
+        trfh_handler.setFormatter(logging.Formatter(fmt=FORMAT))
         root_logger = logging.getLogger()
-        root_logger.addHandler(file_handler)
+        root_logger.addHandler(trfh_handler)
 
 
 def get_short_hostname():

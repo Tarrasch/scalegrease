@@ -64,13 +64,9 @@ def extra_arguments_adder(parser):
 
 def log_path_infix(args):
     artifact_spec = args.artifact
-    cleaned_artifact_spec = None
-    if ":" in artifact_spec:
-        # It is not a file path, just keep it as it is
-        cleaned_artifact_spec = artifact_spec
-    else:
-        # It is a file path, just keep the basename of the jar
-        cleaned_artifact_spec = os.path.basename(artifact_spec)
+    # It is not a file path, just keep it as it is, otherwise, just keep the
+    # basename of the jar
+    cleaned_artifact_spec = artifact_spec.split("/")[-1]
     return "runner/{runner_name}/{cleaned_artifact_spec}/".format(
         runner_name=args.runner,
         cleaned_artifact_spec=cleaned_artifact_spec,
