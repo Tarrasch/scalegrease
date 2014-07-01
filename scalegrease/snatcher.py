@@ -9,6 +9,10 @@ def extra_arguments_adder(_):
     pass
 
 
+def log_path_infix(args):
+    return "snatcher/"
+
+
 def cron_install(conf):
     launcher_class = system.load_class(conf["launcher_class"])
     launcher = launcher_class(conf)
@@ -16,7 +20,8 @@ def cron_install(conf):
 
 
 def main(argv):
-    _args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder)
+    _args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder,
+                                                log_path_infix)
 
     try:
         cron_install(conf['launch'])

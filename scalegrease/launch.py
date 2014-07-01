@@ -251,8 +251,14 @@ def extra_arguments_adder(parser):
                         help="Path to project pom file")
 
 
+def log_path_infix(args):
+    # The arguments are not so interesting to qualify the path with
+    return "launcher/"
+
+
 def main(argv):
-    args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder)
+    args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder,
+                                               log_path_infix)
 
     try:
         launch(args.cron_glob, args.pom_file, args.mvn_offline, conf)

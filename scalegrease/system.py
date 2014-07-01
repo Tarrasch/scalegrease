@@ -1,5 +1,7 @@
 import logging
 import subprocess
+import os
+import errno
 
 
 class CalledProcessError(subprocess.CalledProcessError):
@@ -65,3 +67,14 @@ def load_class(rn):
     mod = __import__(module_name, globals(), locals(), [class_name])
     clazz = getattr(mod, class_name)
     return clazz
+
+
+def mkdir_p(path):
+    # Copy pasted from http://stackoverflow.com/a/600612/621449
+    try:
+        os.makedirs(path)
+    except OSError as exc:
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise

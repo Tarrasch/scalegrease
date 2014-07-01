@@ -1,6 +1,7 @@
 import abc
 import logging
 import sys
+import os
 
 from scalegrease import deploy
 from scalegrease import error
@@ -61,8 +62,24 @@ def extra_arguments_adder(parser):
              "group_id:artifact_id:version or group_id:artifact_id for latest version.")
 
 
+def log_path_infix(args):
+    artifact_spec = args.artifact
+    cleaned_artifact_spec = None
+    if ":" in artifact_spec:
+        # It is not a file path, just keep it as it is
+        cleaned_artifact_spec = artifact_spec
+    else:
+        # It is a file path, just keep the basename of the jar
+        cleaned_artifact_spec = os.path.basename(artifact_spec)
+    return "runner/{runner_name}/{cleaned_artifact_spec}/".format(
+        runner_name=args.runner,
+        cleaned_artifact_spec=cleaned_artifact_spec,
+    )
+
+
 def main(argv):
-    args, conf, rest_argv = common.initialise(argv, extra_arguments_adder)
+    args, conf, rest_argv = common.initialise(argv, extra_arguments_adder,
+                                              log_path_infix)
     try:
         run(args.runner, args.artifact, rest_argv, conf)
     except error.Error:
