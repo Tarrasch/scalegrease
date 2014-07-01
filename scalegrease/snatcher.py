@@ -16,7 +16,7 @@ def cron_install(conf):
 
 
 def main(argv):
-    args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder)
+    _args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder)
 
     try:
         cron_install(conf['launch'])
