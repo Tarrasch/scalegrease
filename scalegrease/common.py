@@ -28,4 +28,12 @@ def initialise(argv, extra_arguments_adder):
     config_expanded = os.path.expandvars(config_file_contents)
     config = json.loads(config_expanded)
     logging.debug("Configuration read:\n%s", config)
+    parse_config_common(config.get("common"))
     return args, config, rest_argv
+
+
+def parse_config_common(config):
+    if config is None:
+        logging.info('No "common" value is configured, skipping ...')
+    else:
+        pass
