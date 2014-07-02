@@ -1,10 +1,12 @@
 import abc
 import logging
 import sys
+import os
 
 from scalegrease import deploy
 from scalegrease import error
 from scalegrease import system
+from scalegrease import common
 
 
 class RunnerBase(object):
@@ -44,24 +46,36 @@ def run(runner_name, artifact_spec, runner_argv, config):
     job_argv = artifact_storage.fetch(runner_argv)
     try:
         runner.run_job(artifact_storage, job_argv)
-    except system.CalledProcessError as e:
+    except system.CalledProcessError:
         logging.exception("Runner %s failed" % runner_name)
         raise
 
 
-def extra_arguments(parser):
+def extra_arguments_adder(parser):
     parser.add_argument("--runner", "-r", required=True,
                         help="Specify runner to use, e.g. hadoop, luigi.  "
                              "It should match one of the runner names in the config, "
-                             "optionally with 'runner' removed.")
+                             "with 'runner' removed.")
     parser.add_argument(
         "artifact",
         help="Specify Maven artifact to download and run, either on format "
              "group_id:artifact_id:version or group_id:artifact_id for latest version.")
 
 
+def log_path_infix(args):
+    artifact_spec = args.artifact
+    # It is not a file path, just keep it as it is, otherwise, just keep the
+    # basename of the jar
+    cleaned_artifact_spec = artifact_spec.split("/")[-1]
+    return "runner/{runner_name}/{cleaned_artifact_spec}/".format(
+        runner_name=args.runner,
+        cleaned_artifact_spec=cleaned_artifact_spec,
+    )
+
+
 def main(argv):
-    args, conf, rest_argv = system.initialise(argv, extra_arguments)
+    args, conf, rest_argv = common.initialise(argv, extra_arguments_adder,
+                                              log_path_infix)
     try:
         run(args.runner, args.artifact, rest_argv, conf)
     except error.Error:

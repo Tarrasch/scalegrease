@@ -30,5 +30,11 @@
         },
 
         "kafka_launcher_topic": "scalegrease-launcher"
+    },
+
+    "common": {
+      "_note": "Put config common to grease{run,launch,snatch} here",
+      "file_logger": "/tmp/log/scalegrease/",
+      "_note_file_logger": "You can just delete file_logger do disable"
     }
 }

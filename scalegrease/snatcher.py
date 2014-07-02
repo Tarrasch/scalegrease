@@ -1,13 +1,16 @@
 import logging
-import shutil
 import sys
-import os
 from scalegrease import error
 from scalegrease import system
+from scalegrease import common
 
 
-def extra_arguments(_):
+def extra_arguments_adder(_):
     pass
+
+
+def log_path_infix(args):
+    return "snatcher/"
 
 
 def cron_install(conf):
@@ -17,7 +20,8 @@ def cron_install(conf):
 
 
 def main(argv):
-    args, conf, rest_argv = system.initialise(argv, extra_arguments)
+    _args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder,
+                                                log_path_infix)
 
     try:
         cron_install(conf['launch'])

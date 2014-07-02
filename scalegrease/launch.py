@@ -16,6 +16,7 @@ import xml.etree
 
 from scalegrease import error
 from scalegrease import system
+from scalegrease import common
 
 
 def maven_output(mvn_cmd):
@@ -241,7 +242,7 @@ class SshNfsLauncher(Launcher):
                                         artifact_id)
 
 
-def add_arguments(parser):
+def extra_arguments_adder(parser):
     parser.add_argument("--cron-glob", "-g", default="src/main/cron/*.cron",
                         help="Glob pattern for enumerating cron files")
     parser.add_argument("--mvn-offline", "-o", action="store_true",
@@ -250,8 +251,14 @@ def add_arguments(parser):
                         help="Path to project pom file")
 
 
+def log_path_infix(args):
+    # The arguments are not so interesting to qualify the path with
+    return "launcher/"
+
+
 def main(argv):
-    args, conf, _ = system.initialise(argv, add_arguments)
+    args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder,
+                                               log_path_infix)
 
     try:
         launch(args.cron_glob, args.pom_file, args.mvn_offline, conf)
