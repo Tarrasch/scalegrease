@@ -23,8 +23,7 @@ class RunnerBase(object):
 class ShellRunner(RunnerBase):
     def run_job(self, artifact_storage, argv):
         cmd_line = argv + [artifact_storage.jar_path(), artifact_storage.spec()]
-        logging.info(' '.join(cmd_line))
-        output = system.check_output(cmd_line)
+        output = system.run_with_logging(cmd_line)
         logging.info(output)
 
 

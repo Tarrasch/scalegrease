@@ -20,8 +20,7 @@ from scalegrease import common
 
 
 def maven_output(mvn_cmd):
-    logging.info(" ".join(mvn_cmd))
-    output = system.check_output(mvn_cmd)
+    output = system.run_with_logging(mvn_cmd)
     logging.debug(output)
     return output
 
@@ -180,15 +179,14 @@ class SshNfsLauncher(Launcher):
 
         clean_cmd = ["ssh", repo_host, "rm", "-f",
                      "%s/%s__%s__*" % (repo_dir, group_id, artifact_id)]
-        logging.info("Removing old crontabs: %s", ' '.join(clean_cmd))
-        clean_output = system.check_output(clean_cmd)
+        logging.info("Removing old crontabs ...")
+        clean_output = system.run_with_logging(clean_cmd)
         logging.info("Ssh output: %s", clean_output)
 
         for crontab in crontabs:
             dst_name = "__".join([group_id, artifact_id, os.path.basename(crontab)])
             scp_cmd = ["scp", crontab, "%s:%s/%s" % (repo_host, repo_dir, dst_name)]
-            logging.info(' '.join(scp_cmd))
-            scp_output = system.check_output(scp_cmd)
+            scp_output = system.run_with_logging(scp_cmd)
             logging.info("Scp output: %s" % scp_output)
 
     def snatch(self):

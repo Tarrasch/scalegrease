@@ -79,7 +79,7 @@ Downloaded: https://artifactory/artifactory/repo/com/spotify/scalegrease/{1}/mav
     @patch("scalegrease.deploy.tempfile.mkdtemp", new=lambda (prefix): os.path.join("/tmp/path"))
     @patch("scalegrease.deploy.shutil.rmtree", new=lambda(path): None)
     @patch("scalegrease.deploy.os.environ", new={"HOME": "/home/scalegrease"})
-    @patch("scalegrease.deploy.system.check_output",
+    @patch("scalegrease.deploy.system.run_with_logging",
            new=lambda(args): MavenStorageTest._MVN_CLI_OUTPUT.format(
                "LATEST", "0.0.1-SNAPSHOT", "0.0.1-30000101.123456-7"))
     def test_fetch_parsing(self):

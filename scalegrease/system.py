@@ -17,16 +17,6 @@ class CalledProcessError(subprocess.CalledProcessError):
                 ('\nOutput:\n"""\n%s"""' % self.output))
 
 
-def check_output(cmd, env=None):
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT, env=env)
-    output, _ = process.communicate()
-    exit_code = process.poll()
-    if exit_code:
-        raise CalledProcessError(exit_code, cmd, output=output)
-    return output
-
-
 def run_with_logging(cmd, env=None):
     """
     Run cmd and wait for it to finish. While cmd is running, we read it's
@@ -45,10 +35,10 @@ def run_with_logging(cmd, env=None):
         logger.info(line.rstrip('\n'))
 
     exit_code = process.poll()
+    output = ''.join(output_lines)
     if exit_code:
-        output = ''.join(output_lines)
         raise CalledProcessError(exit_code, cmd, output=output)
-    return None
+    return output
 
 
 def write_file(path, content):
