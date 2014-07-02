@@ -34,6 +34,7 @@ def run_with_logging(cmd, env=None):
     """
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, env=env)
+    logging.info("Executing: %s", " ".join(cmd))
     logger = logging.getLogger('subprocess.{0}'.format(cmd[0]))
     output_lines = []
     while True:
