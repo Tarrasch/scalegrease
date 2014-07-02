@@ -66,7 +66,8 @@ def parse_config_common_file_logger(config, instantiated_log_path_infix):
 
         # We include the process id since we can imagine multiple instances
         # writing to the same file
-        FORMAT = '[%(process)d] %(asctime)-15s %(levelname)-6s %(message)s'
+        FORMAT = ('[%(process)d] %(asctime)-15s' +
+                  ' %(levelname)s:%(name)s %(message)s')
         total_path = logging_directory + "scalegrease.log"
         trfh_handler = (
             logging.handlers.TimedRotatingFileHandler(total_path,
