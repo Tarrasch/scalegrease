@@ -60,8 +60,8 @@ def parse_config_common_file_logger(config, instantiated_log_path_infix):
         try:
             system.mkdir_p(logging_directory)
         except:
-            logging.exception("Could not create directory '%s' for log"
-                              "files. Skipping", logging_directory)
+            logging.warn("Could not create directory for logging, skipping. "
+                         "Directory: %s", logging_directory)
             return
 
         # We include the process id since we can imagine multiple instances
