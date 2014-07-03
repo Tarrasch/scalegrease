@@ -66,14 +66,19 @@ def parse_config_common_file_logger(config, instantiated_log_path_infix):
 
         # We include the process id since we can imagine multiple instances
         # writing to the same file
-        FORMAT = '[%(process)d] %(asctime)-15s %(levelname)-6s %(message)s'
+        FORMAT = ('[%(process)d] %(asctime)-s' +
+                  ' %(levelname)s:%(name)s %(message)s')
         total_path = logging_directory + "scalegrease.log"
         trfh_handler = (
             logging.handlers.TimedRotatingFileHandler(total_path,
                                                       when="midnight",
                                                       backupCount=100,
                                                       utc=True))
-        trfh_handler.setFormatter(logging.Formatter(fmt=FORMAT))
+        # We don't log the date because we rotate on midnight so it's
+        # redundant. Also we skip milliseconds, since scalegrease might in
+        # itself call scalegrease, increasing risk for log-blindness.
+        formatter = logging.Formatter(fmt=FORMAT, datefmt='%H:%M:%S')
+        trfh_handler.setFormatter(formatter)
         root_logger = logging.getLogger()
         root_logger.addHandler(trfh_handler)
 

@@ -109,8 +109,7 @@ class MavenStorage(ArtifactStorage):
                 "-DoutputDirectory=" + tmp_dir,
                 "-Dartifact={0}".format(self.spec())]
 
-            logging.info(" ".join(mvn_copy_cmd))
-            mvn_copy_out = system.check_output(mvn_copy_cmd)
+            mvn_copy_out = system.run_with_logging(mvn_copy_cmd)
             logging.debug(mvn_copy_out)
 
             copying_re = r'Copying (.*\.jar) to (.*)'
