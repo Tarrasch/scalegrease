@@ -46,7 +46,7 @@ def run(runner_name, artifact_spec, runner_argv, config):
     try:
         runner.run_job(artifact_storage, job_argv)
     except system.CalledProcessError:
-        logging.exception("Runner %s failed" % runner_name)
+        logging.error("Runner %s failed" % runner_name)
         raise
 
 
