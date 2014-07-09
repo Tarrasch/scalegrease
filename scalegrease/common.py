@@ -40,7 +40,7 @@ def initialise(argv, extra_arguments_adder, log_path_infix):
 
 def parse_config_common(config, instantiated_log_path_infix):
     if config is None:
-        logging.info('No "common" value is configured, skipping ...')
+        logging.warn('No "common" value is configured, skipping ...')
     else:
         parse_config_common_file_logger(config.get("file_logger"),
                                         instantiated_log_path_infix)
@@ -48,7 +48,7 @@ def parse_config_common(config, instantiated_log_path_infix):
 
 def parse_config_common_file_logger(config, instantiated_log_path_infix):
     if config is None:
-        logging.info('No "file_logger" value is configured, skipping ...')
+        logging.warn('No "file_logger" value is configured, skipping ...')
     else:
         # We add username so we're less likely to get permission issues
         path_prefix = "{config_stripped}/{username}/{short_hostname}/".format(
