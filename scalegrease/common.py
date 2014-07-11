@@ -69,6 +69,7 @@ def parse_config_common_file_logger(config, instantiated_log_path_infix):
         FORMAT = ('[%(process)d] %(asctime)-s'
                   ' %(levelname)s:%(name)s %(message)s')
         total_path = logging_directory + "scalegrease.log"
+        logging.info("Adding file logger with path: %s", total_path)
         trfh_handler = (
             logging.handlers.TimedRotatingFileHandler(total_path,
                                                       when="midnight",
