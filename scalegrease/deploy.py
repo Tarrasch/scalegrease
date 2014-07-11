@@ -5,6 +5,7 @@ import shutil
 import tempfile
 import abc
 import argparse
+import subprocess
 
 from scalegrease import error
 from scalegrease import system
@@ -119,9 +120,9 @@ class MavenStorage(ArtifactStorage):
             self.canonical_artifact = self.artifact.with_version(version, canonical_version)
 
             logging.info("Downloaded %s to %s", self.spec(), self.jar_path())
-        except system.CalledProcessError as e:
-            logging.exception("Maven failed. Output:\n%s", e.output)
-            raise error.Error("Download failed: %s\n%s" % (e, e.output))
+        except subprocess.CalledProcessError as e:
+            logging.error("Maven failed!")
+            raise error.Error("Download failed: %s" % e)
         finally:
             shutil.rmtree(tmp_dir)
 

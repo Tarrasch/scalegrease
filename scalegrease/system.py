@@ -4,19 +4,6 @@ import os
 import errno
 
 
-class CalledProcessError(subprocess.CalledProcessError):
-    """
-    Python 2.6 subprocess.CalledProcessError has no "output" property.
-    """
-    def __init__(self, returncode, cmd, output=None):
-        super(CalledProcessError, self).__init__(returncode, cmd)
-        self.output = output
-
-    def __str__(self):
-        return (super(CalledProcessError, self).__str__() +
-                ('\nOutput:\n"""\n%s"""' % self.output))
-
-
 def run_with_logging(cmd, env=None):
     """
     Run cmd and wait for it to finish. While cmd is running, we read it's
@@ -38,7 +25,7 @@ def run_with_logging(cmd, env=None):
     exit_code = process.poll()
     output = ''.join(output_lines)
     if exit_code:
-        raise CalledProcessError(exit_code, cmd, output=output)
+        raise subprocess.CalledProcessError(exit_code, cmd)
     return output
 
 

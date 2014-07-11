@@ -2,6 +2,7 @@ import abc
 import logging
 import sys
 import os
+import subprocess
 
 from scalegrease import deploy
 from scalegrease import error
@@ -45,7 +46,7 @@ def run(runner_name, artifact_spec, runner_argv, config):
     job_argv = artifact_storage.fetch(runner_argv)
     try:
         runner.run_job(artifact_storage, job_argv)
-    except system.CalledProcessError:
+    except subprocess.CalledProcessError:
         logging.error("Runner %s failed" % runner_name)
         raise
 
