@@ -28,7 +28,7 @@ class LuigiRunner(RunnerBase):
         runner_cmd = self._config["command"]
 
         sub_env = os.environ.copy()
-        sub_env["PLATFORM_ARTIFACT_SPEC"] = artifact.spec()
+        sub_env["PLATFORM_ARTIFACT_SPEC"] = os.path.abspath(artifact.jar_path())
 
         src_path = os.path.join(tmp_dir, "python")
         if "PYTHONPATH" in sub_env:
@@ -38,4 +38,7 @@ class LuigiRunner(RunnerBase):
 
         cmd_line = [runner_cmd] + list(cmd_args)
 
+        cwd_backup = os.getcwd()
+        os.chdir(src_path)
         system.run_with_logging(cmd_line, env=sub_env)
+        os.chdir(cwd_backup)
