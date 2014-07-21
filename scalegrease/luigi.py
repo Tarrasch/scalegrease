@@ -40,5 +40,7 @@ class LuigiRunner(RunnerBase):
 
         cwd_backup = os.getcwd()
         os.chdir(src_path)
-        system.run_with_logging(cmd_line, env=sub_env)
-        os.chdir(cwd_backup)
+        try:
+            system.run_with_logging(cmd_line, env=sub_env)
+        finally:
+            os.chdir(cwd_backup)
