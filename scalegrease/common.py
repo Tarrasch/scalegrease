@@ -5,7 +5,9 @@ import logging.handlers
 import os
 import socket
 import getpass
+
 from scalegrease import system
+
 
 # This module is for code common to scalegrease that is not system-level enough
 # to be put in the system module
@@ -17,12 +19,18 @@ from scalegrease import system
 def initialise(argv, extra_arguments_adder, log_path_infix):
     """ Code common to all scalegrease executables """
     parser = argparse.ArgumentParser()
+
     parser.add_argument("--config-file", "-c", default="/etc/scalegrease.json",
                         help="Read configuration from CONFIG_FILE. "
                              "Environment variables in the content will be "
                              "expanded.")
+
     parser.add_argument("--verbose", "-v", action="store_true",
                         help="Increase debug verbosity")
+
+    parser.add_argument("--no-random-delay", "-D", action="store_true",
+                        help="Force no random delay ever (default adds random 60s delay running from cron)")
+
     extra_arguments_adder(parser)
     args, rest_argv = parser.parse_known_args(argv[1:])
     if rest_argv[:1] == ['--']:

@@ -1,8 +1,9 @@
 import abc
 import logging
+import random
 import sys
-import os
 import subprocess
+import time
 
 from scalegrease import deploy
 from scalegrease import error
@@ -76,6 +77,10 @@ def log_path_infix(args):
 def main(argv):
     args, conf, rest_argv = common.initialise(argv, extra_arguments_adder,
                                               log_path_infix)
+
+    if args.no_random_delay and system.possible_cron():
+        time.sleep(random.randint(0, 59))
+
     try:
         run(args.runner, args.artifact, rest_argv, conf)
     except error.Error:

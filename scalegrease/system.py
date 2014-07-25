@@ -1,7 +1,17 @@
-import logging
-import subprocess
-import os
 import errno
+import logging
+import os
+import subprocess
+import sys
+
+
+def possible_cron():
+    """
+    Return true if script possibly is running from cron.
+    Detects by checking if stdin is a tty (if it is - then it is adhock running job).
+    http://stackoverflow.com/questions/4213091/detect-if-python-script-is-run-from-console-or-by-crontab
+    """
+    return not os.isatty(sys.stdin.fileno())
 
 
 def run_with_logging(cmd, env=None):
