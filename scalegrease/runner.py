@@ -79,7 +79,11 @@ def main(argv):
                                               log_path_infix)
 
     if not args.no_random_delay and system.possible_cron():
-        time.sleep(random.randint(0, 59))
+        sleep_time = random.randint(0, 59)
+        logging.info("Will sleep for %s secs for load balancing", sleep_time)
+        time.sleep(sleep_time)
+    else:
+        logging.debug("Not doing the load balancing random sleep")
 
     try:
         run(args.runner, args.artifact, rest_argv, conf)
