@@ -78,7 +78,7 @@ def main(argv):
     args, conf, rest_argv = common.initialise(argv, extra_arguments_adder,
                                               log_path_infix)
 
-    if args.no_random_delay and system.possible_cron():
+    if not args.no_random_delay and system.possible_cron():
         time.sleep(random.randint(0, 59))
 
     try:
