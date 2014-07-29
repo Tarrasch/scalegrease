@@ -7,12 +7,11 @@ setup(name='scalegrease',
       version='1',
       url='https://github.com/spotify/scalegrease',
       description='A tool chain for executing batch processing jobs',
-      packages=['scalegrease'],
+      packages=['scalegrease', 'scalegrease.runners'],
       data_files=[('/etc', ['conf/scalegrease.json'])],
       scripts=[
           'bin/greaselaunch',
           'bin/greaserun',
           'bin/greasesnatch'
       ]
-)
-
+      )
