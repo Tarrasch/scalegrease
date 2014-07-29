@@ -25,8 +25,7 @@ class RunnerBase(object):
 class ShellRunner(RunnerBase):
     def run_job(self, artifact_storage, argv):
         cmd_line = argv + [artifact_storage.jar_path(), artifact_storage.spec()]
-        output = system.run_with_logging(cmd_line)
-        logging.info(output)
+        system.run_with_logging(cmd_line)
 
 
 # The defaul-runners are hardcoded to simplify deploying of scalegrease. If we
