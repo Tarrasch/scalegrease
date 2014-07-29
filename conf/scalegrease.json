@@ -35,6 +35,6 @@
     "common": {
       "_note": "Put config common to grease{run,launch,snatch} here",
       "file_logger": "/tmp/log/scalegrease/",
-      "_note_file_logger": "You can just delete file_logger do disable"
+      "_note_file_logger": "You can just delete file_logger to disable"
     }
 }
