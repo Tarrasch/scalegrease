@@ -29,9 +29,17 @@ class ShellRunner(RunnerBase):
         logging.info(output)
 
 
+# The defaul-runners are hardcoded to simplify deploying of scalegrease. If we
+# would put these in the config files, the config file would need to change
+# every time we move the Runners.
+SCALEGREASE_RUNNERS = [
+    "scalegrease.luigi.LuigiRunner",
+    "scalegrease.hadoop.HadoopRunner",
+    "scalegrease.runner.ShellRunner"
+]
+
 def find_runner(runner_name, config):
-    names = config['runners']
-    for rn in names:
+    for rn in SCALEGREASE_RUNNERS + config['extra_runners']:
         class_name = rn.split('.')[-1]
         if class_name.lower() == (runner_name.lower() + "runner"):
             clazz = system.load_class(rn)

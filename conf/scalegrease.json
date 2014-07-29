@@ -1,10 +1,15 @@
 {
     "_note": "Avoid environment variables in production. They are useful for testing, however.",
-    "runners": [
-        "scalegrease.luigi.LuigiRunner",
-        "scalegrease.hadoop.HadoopRunner",
-        "scalegrease.runner.ShellRunner"
+
+    "extra_runners": [
     ],
+    "_extra_runners_example": [
+        "scalegrease.luigi.LuigiRunner",
+        "whatever.you.WantRunner",
+        "must.end.WithRunner"
+    ],
+
+    "_note": "Here we put the configuration of the non-user-defined runners",
     "LuigiRunner": {
         "command": "spluigi"
     },
