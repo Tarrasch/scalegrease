@@ -5,7 +5,6 @@
     ],
     "_extra_runners_example": [
         "scalegrease.luigi.LuigiRunner",
-        "whatever.you.WantRunner",
         "must.end.WithRunner"
     ],
 
