@@ -2,8 +2,8 @@ import os
 import shutil
 import tempfile
 import zipfile
-import system
 
+from scalegrease import system
 from scalegrease.runner import RunnerBase
 
 
