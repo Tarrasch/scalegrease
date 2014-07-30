@@ -32,7 +32,7 @@ SCALEGREASE_RUNNERS = [
 ]
 
 def find_runner(runner_name, config):
-    for rn in SCALEGREASE_RUNNERS + config['extra_runners']:
+    for rn in SCALEGREASE_RUNNERS + config.get('extra_runners', []):
         class_name = rn.split('.')[-1]
         if class_name.lower() == (runner_name.lower() + "runner"):
             clazz = system.load_class(rn)
