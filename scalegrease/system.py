@@ -19,9 +19,9 @@ def run_with_logging(cmd, env=None):
     Run cmd and wait for it to finish. While cmd is running, we read it's
     output and print it to a logger.
     """
+    logging.info("Executing: %s", " ".join(cmd))
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                stderr=subprocess.STDOUT, env=env)
-    logging.info("Executing: %s", " ".join(cmd))
     short_cmd0 = os.path.basename(cmd[0])
     logger = logging.getLogger('subp.{0}'.format(short_cmd0))
     output_lines = []

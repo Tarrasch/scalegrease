@@ -1,8 +1,8 @@
 import argparse
 import json
 import logging
-import logging.handlers
 import os
+import datetime
 import socket
 import getpass
 
@@ -64,6 +64,8 @@ def parse_config_common_file_logger(config, instantiated_log_path_infix):
             username=getpass.getuser(),
             short_hostname=get_short_hostname(),
         )
+        now = datetime.datetime.now()
+        log_filename = '{0:%Y-%m-%d}.log'.format(now)
         logging_directory = path_prefix + instantiated_log_path_infix
         try:
             system.mkdir_p(logging_directory)
@@ -73,23 +75,22 @@ def parse_config_common_file_logger(config, instantiated_log_path_infix):
             return
 
         # We include the process id since we can imagine multiple instances
-        # writing to the same file
+        # writing to the same file. Also, we do not need any log rotation,
+        # since all the binaries will be short-lived (way less than a day).
+        # Eventually we should maybe clean up the log files.
         FORMAT = ('[%(process)d] %(asctime)-s'
                   ' %(levelname)s:%(name)s %(message)s')
-        total_path = logging_directory + "scalegrease.log"
+        total_path = logging_directory + log_filename
+        file_handler = logging.FileHandler(total_path)
         logging.info("Adding file logger with path: %s", total_path)
-        trfh_handler = (
-            logging.handlers.TimedRotatingFileHandler(total_path,
-                                                      when="midnight",
-                                                      backupCount=100,
-                                                      utc=True))
-        # We don't log the date because we rotate on midnight so it's
-        # redundant. Also we skip milliseconds, since scalegrease might in
-        # itself call scalegrease, increasing risk for log-blindness.
+
+        # We don't log the date because it's contained in the file name. Also
+        # we skip milliseconds, since scalegrease might in itself call
+        # scalegrease, increasing risk for log-blindness.
         formatter = logging.Formatter(fmt=FORMAT, datefmt='%H:%M:%S')
-        trfh_handler.setFormatter(formatter)
+        file_handler.setFormatter(formatter)
         root_logger = logging.getLogger()
-        root_logger.addHandler(trfh_handler)
+        root_logger.addHandler(file_handler)
 
 
 def get_short_hostname():
