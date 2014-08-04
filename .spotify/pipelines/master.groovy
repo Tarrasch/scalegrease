@@ -10,6 +10,9 @@ def EPOCH = '0'
 
 use(Pipeline, dist.Deb) {
     pipeline {
+        stage('test') {
+            shell('nostests -v')
+        }
         stage('Squeeze build') {
             pipelineVersion("${EPOCH}:${VERSION}")
             buildPackage(distro: 'unstable', release: 'squeeze')
