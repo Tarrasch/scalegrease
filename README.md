@@ -1,10 +1,8 @@
-Scalegrease
-===========
+# Scalegrease
 
 A tool chain for scheduling, load balancing, deploying, running, and debugging data processing jobs.
 
-DISCLAIMER
-----------
+## DISCLAIMER
 
 **This is alpha software, occasionally not working.**  We are experimenting with creating
 a project as open source from scratch.  Beware that this project may radically change in
@@ -12,18 +10,15 @@ incompatible ways until 1.0 is released, and that the development will be driven
 internal needs for the near future.
 
 
-Development
-===========
+# Development
 
-Requirements for development
-----------------------------
+## Requirements for development
 
 ```bash
 sudo pip install -r requirements.txt
 ```
 
-Test running locally
---------------------
+## Test running locally
 
 ```bash
 export PYTHONPATH="$PWD:$PYTHONPATH"
