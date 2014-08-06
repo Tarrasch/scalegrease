@@ -2,7 +2,7 @@
 A simple module that just prints the cron files installed on the machine in a
 pretty way.
 
-greasewatch is currently an unfinished dirty hack! Don't rely on its existence.
+greasestatus is currently an unfinished dirty hack! Don't rely on its existence.
 """
 import sys
 import os

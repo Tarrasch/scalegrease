@@ -51,7 +51,7 @@ greaserun --config-file ~/scalegrease.json --runner shell testing.foor.fun:arash
   echo 'Scalegrease downloads the jar for me to' {jar_path} ', nice huh?'
 ```
 
-### greasewatch
+### greasestatus
 
 You can use this to check if your cron files have been installed on a farm node.
 
@@ -59,7 +59,7 @@ You can use this to check if your cron files have been installed on a farm node.
 $ ssh farmmachine.acme.net
 $ ls /etc/cron.d/
 < ... Lots of cron files starting with scalegrease__ ... >
-$ greasewatch
+$ greasestatus
 cron-filename (artifact):
     0 * * * * acme-analytics-data greaserun --runner luigi <artifact_spec> <parameters>
 ```
