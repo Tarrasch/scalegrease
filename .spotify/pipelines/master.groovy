@@ -1,29 +1,23 @@
 // This file contains build specifications for Spotify internal CI/CD pipeline.  It can be safely
 // ignored.
 
-@Grab(group = 'com.spotify', module = 'pipeline-conventions', version = '0.0.6', changing = true)
+@Grab(group='com.spotify', module='pipeline-conventions', version='1.0.2')
+import com.spotify.pipeline.Pipeline
 
-import com.spotify.pipeline.*
+new Pipeline(this) {{ build {
+  group(name: 'Test') {
+    shell.run(cmd: 'nosetests -v')
+  }
+  debian.pipelineVersionFromDebianChangelog()
+  group(name: 'Build & Upload squeeze') {
+    sbuild.build(distro: 'unstable', release: 'squeeze')
+    debian.upload(distro: 'unstable', release: 'squeeze')
+    debian.upload(distro: 'stable', release: 'squeeze')
+  }
+  group(name: 'Build & Upload trusty') {
+    sbuild.build(distro: 'unstable', release: 'trusty')
+    debian.upload(distro: 'unstable', release: 'trusty')
+    debian.upload(distro: 'stable', release: 'trusty')
+  }
+}}}
 
-def VERSION = '0.1'
-def EPOCH = '0'
-
-use(Pipeline, dist.Deb) {
-    pipeline {
-        stage('Squeeze build') {
-            pipelineVersion("${EPOCH}:${VERSION}")
-            buildPackage(distro: 'unstable', release: 'squeeze')
-        }
-        stage('Squeeze upload') {
-            uploadPackage(distro: 'unstable', release: 'squeeze')
-            uploadPackage(distro: 'stable', release: 'squeeze')
-        }
-        stage('Trusty build') {
-            buildPackage(distro: 'unstable', release: 'trusty')
-        }
-        stage('Trusty upload') {
-            uploadPackage(distro: 'unstable', release: 'trusty')
-            uploadPackage(distro: 'stable', release: 'trusty')
-        }
-    }
-}
