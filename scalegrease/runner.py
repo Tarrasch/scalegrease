@@ -1,4 +1,5 @@
 import abc
+import argparse
 import logging
 import random
 import sys
@@ -62,6 +63,10 @@ def extra_arguments_adder(parser):
         "artifact",
         help="Specify Maven artifact to download and run, either on format "
              "group_id:artifact_id:version or group_id:artifact_id for latest version.")
+    parser.add_argument(
+        "command",
+        nargs=argparse.REMAINDER,
+        )
 
 
 def log_path_infix(args):
@@ -76,8 +81,7 @@ def log_path_infix(args):
 
 
 def main(argv):
-    args, conf, rest_argv = common.initialise(argv, extra_arguments_adder,
-                                              log_path_infix)
+    args, conf = common.initialise(argv, extra_arguments_adder, log_path_infix)
 
     if not args.no_random_delay and system.possible_cron():
         sleep_time = random.randint(0, 59)
@@ -87,7 +91,7 @@ def main(argv):
         logging.debug("Not doing the load balancing random sleep")
 
     try:
-        run(args.runner, args.artifact, rest_argv, conf)
+        run(args.runner, args.artifact, args.command, conf)
     except error.Error:
         logging.exception("Job failed")
         return 1

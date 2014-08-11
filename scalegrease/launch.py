@@ -255,8 +255,7 @@ def log_path_infix(args):
 
 
 def main(argv):
-    args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder,
-                                               log_path_infix)
+    args, conf = common.initialise(argv, extra_arguments_adder, log_path_infix)
 
     try:
         launch(args.cron_glob, args.pom_file, args.mvn_offline, conf)
