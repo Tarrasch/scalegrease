@@ -20,8 +20,8 @@ def cron_install(conf):
 
 
 def main(argv):
-    _args, conf, _rest_argv = common.initialise(argv, extra_arguments_adder,
-                                                log_path_infix)
+    _args, conf = common.initialise(argv, extra_arguments_adder,
+                                    log_path_infix)
 
     try:
         cron_install(conf['launch'])

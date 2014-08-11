@@ -32,10 +32,7 @@ def initialise(argv, extra_arguments_adder, log_path_infix):
                         help="Force no random delay ever (default adds random 60s delay running from cron)")
 
     extra_arguments_adder(parser)
-    args, rest_argv = parser.parse_known_args(argv[1:])
-    if rest_argv[:1] == ['--']:
-        # Argparse really should have removed it for us.
-        rest_argv = rest_argv[1:]
+    args = parser.parse_args(argv[1:])
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
     logging.info("Reading configuration from %s", args.config_file)
     config_file_contents = system.read_file(args.config_file)
@@ -43,7 +40,7 @@ def initialise(argv, extra_arguments_adder, log_path_infix):
     config = json.loads(config_expanded)
     logging.debug("Configuration read:\n%s", config)
     parse_config_common(config.get("common"), log_path_infix(args))
-    return args, config, rest_argv
+    return args, config
 
 
 def parse_config_common(config, instantiated_log_path_infix):
