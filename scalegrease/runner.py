@@ -74,10 +74,14 @@ def log_path_infix(args):
     # It is not a file path, just keep it as it is, otherwise, just keep the
     # basename of the jar
     cleaned_artifact_spec = artifact_spec.split("/")[-1]
-    return "runner/{runner_name}/{cleaned_artifact_spec}/".format(
+    result = "runner/{runner_name}/{cleaned_artifact_spec}/".format(
         runner_name=args.runner,
         cleaned_artifact_spec=cleaned_artifact_spec,
     )
+    if args.runner.lower() == 'luigi':
+        task_ix = args.command.index('--task')
+        result += args.command[task_ix + 1] + "/"
+    return result
 
 
 def main(argv):
