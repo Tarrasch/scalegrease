@@ -32,7 +32,7 @@ def run_with_logging(cmd, env=None):
         output_lines += [line]
         logger.info(line.rstrip('\n'))
 
-    exit_code = process.poll()
+    exit_code = process.wait()
     output = ''.join(output_lines)
     if exit_code:
         raise subprocess.CalledProcessError(exit_code, cmd)
