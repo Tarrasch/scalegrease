@@ -170,6 +170,8 @@ class KafkaLauncher(Launcher):
                     system.write_file(dst_path, tab_contents)
                 except IOError:
                     logging.exception("Failed to install crontab %s", dst_path)
+            else:
+                os.utime(dst_path, None)
 
 
 class SshNfsLauncher(Launcher):
