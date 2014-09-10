@@ -16,6 +16,7 @@
         "command": ["hadoop", "jar"]
     },
     "ShellRunner": {},
+    "PythonRunner": {},
 
     "launch": {
         "launcher_class": "scalegrease.launch.KafkaLauncher",

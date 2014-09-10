@@ -29,7 +29,8 @@ class RunnerBase(object):
 SCALEGREASE_RUNNERS = [
     "scalegrease.runners.luigi.LuigiRunner",
     "scalegrease.runners.hadoop.HadoopRunner",
-    "scalegrease.runners.shell.ShellRunner"
+    "scalegrease.runners.shell.ShellRunner",
+    "scalegrease.runners.python.PythonRunner",
 ]
 
 def find_runner(runner_name, config):
