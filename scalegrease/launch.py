@@ -99,7 +99,7 @@ class KafkaLauncher(Launcher):
         crontab_contents = []
         for cr in crontabs:
             self._validate_name(cr)
-            crontab_contents.append({'name': os.path.basename(cr), 'content': system.read_file(cr)})
+            crontab_contents.append({'name': os.path.basename(cr), 'content': system.read_file(cr) + '\n'})
         msg = {'version': self.VERSION, 'group_id': group_id, 'artifact_id': artifact_id,
                'crontabs': crontab_contents}
         json_msg = json.dumps(msg)
