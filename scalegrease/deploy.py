@@ -6,6 +6,8 @@ import tempfile
 import abc
 import argparse
 import subprocess
+import random
+import time
 
 from scalegrease import error
 from scalegrease import system
@@ -93,37 +95,48 @@ class MavenStorage(ArtifactStorage):
         failure.  An artifactory failure will prevent new versions from getting rolled out,
         but not prevent jobs from running.
         """
-        tmp_dir = tempfile.mkdtemp(prefix="greaserun")
-        try:
-            # Notes on maven behaviour:  In case of network failure, it will reuse the locally cached
-            # repository metadata gracefully, and therefore use the latest downloaded version.
-            # In case multiple maven processes are running, they might download a new artifact
-            # concurrently.  Maven downloads to temporary files and renames them, however, so each file
-            # download is atomic, and no external locking should be needed.
+        # Notes on maven behaviour:  In case of network failure, it will reuse the locally cached
+        # repository metadata gracefully, and therefore use the latest downloaded version.
+        # In case multiple maven processes are running, they might download a new artifact
+        # concurrently.  Maven downloads to temporary files and renames them, however, so each file
+        # download is atomic, and no external locking should be needed.
 
-            # We use the "copy" command rather than "get", since "get" won't tell us which version it
-            # resolved to.  Discard the copied file and use the one in the local repository in order
-            # to save some resources.  Consider it a way to pre-warm the OS caches. :-)
+        # We use the "copy" command rather than "get", since "get" won't tell us which version it
+        # resolved to.  Discard the copied file and use the one in the local repository in order
+        # to save some resources.  Consider it a way to pre-warm the OS caches. :-)
+
+        num_tries = 3
+        for i in range(num_tries):
+            # We have a retry loop for downloading the jar. We've seen issues
+            # when the same machine runs this maven command at the same time.
+            tmp_dir = tempfile.mkdtemp(prefix="greaserun")
             mvn_copy_cmd = [
                 "mvn", "-e", "-o" if offline else "-U",
                 "org.apache.maven.plugins:maven-dependency-plugin:2.8:copy",
                 "-DoutputDirectory=" + tmp_dir,
                 "-Dartifact={0}".format(self.spec())]
+            try:
+                mvn_copy_out = system.run_with_logging(mvn_copy_cmd)
+            except subprocess.CalledProcessError as ex:
+                if i < num_tries - 1:
+                    logging.error("Mvn failed! Will rerun after random sleep.")
+                    sleep_time = random.randint(0, 59)
+                    logging.error("Will sleep for %s secs", sleep_time)
+                    time.sleep(sleep_time)
+                    continue
+                else:
+                    raise error.Error("Download failed: %s" % ex)
+            finally:
+                shutil.rmtree(tmp_dir)
+            break
 
-            mvn_copy_out = system.run_with_logging(mvn_copy_cmd)
+        copying_re = r'Copying (.*\.jar) to (.*)'
+        match = re.search(copying_re, mvn_copy_out)
+        version = _extract_version(match.group(1), self.artifact)
+        canonical_version = _extract_version(match.group(2), self.artifact)
+        self.canonical_artifact = self.artifact.with_version(version, canonical_version)
 
-            copying_re = r'Copying (.*\.jar) to (.*)'
-            match = re.search(copying_re, mvn_copy_out)
-            version = _extract_version(match.group(1), self.artifact)
-            canonical_version = _extract_version(match.group(2), self.artifact)
-            self.canonical_artifact = self.artifact.with_version(version, canonical_version)
-
-            logging.info("Downloaded %s to %s", self.spec(), self.jar_path())
-        except subprocess.CalledProcessError as e:
-            logging.error("Maven failed!")
-            raise error.Error("Download failed: %s" % e)
-        finally:
-            shutil.rmtree(tmp_dir)
+        logging.info("Downloaded %s to %s", self.spec(), self.jar_path())
 
     def jar_path(self):
         if self.canonical_artifact is None:
